@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+  <head>
+    <title>Data Visualization with ggplot2</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, user-scalable=no"
+    />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <noscript
+      ><link rel="stylesheet" href="assets/css/noscript.css"
+    /></noscript>
+  </head>
+  <body class="is-preload">
+    <!-- Header -->
+    <!-- <header id="header">
+				<a href="index.html" class="title">Hyperspace</a>
+				<nav>
+					<ul>
+						<li><a href="index.html">Home</a></li>
+						<li><a href="generic.html" class="active">Generic</a></li>
+						<li><a href="elements.html">Elements</a></li>
+					</ul>
+				</nav>
+			</header> -->
+
+    <!-- Wrapper -->
+    <div id="wrapper">
+      <!-- Main -->
+      <section id="main" class="wrapper">
+        <div class="inner">
+          <h1 class="major">Data Visualization with R and ggplot</h1>
+          <p>
+            The dataset that I worked with contains about 40K entries of songs
+            on Spotify, classified by 22 variables such as genre, length, and
+            indexes that the Spotify API uses to assess songs, such as
+            danceability and liveness.
+          </p>
+          <p>
+            <a
+              href="https://www.kaggle.com/datasets/mrmorj/dataset-of-songs-in-spotify?resource=download&amp;select=genres_v2.csv"
+              >Link to Dataset</a
+            >
+          </p>
+          
+          <p>
+            Plot 1: It can be observed that Pop music has a relatively small
+            distribution of song length with them hovering around 3-4 minutes.
+            On the contrary, Psytrance had the largest variance with an
+            extremely long outlier.
+          </p>
+          <button onclick="toggle1(this)">Show Code</button>
+          <pre id = 'plot1', hidden = "true">
+              <code>
+                {r}
+                library(tidyverse)
+                library(readr)
+                library(cowplot)
+                require(dplyr)
+                library(treemapify)
+                genres <- read_csv("data/genres_v2.csv")
+                
+                
+                #| fig-width: 10
+                #| fig-height: 5
+                ggplot(genres, aes(y = duration_ms, color = genre)) +
+                  geom_boxplot(width = .2) +
+                  scale_x_continuous(
+                    NULL,
+                    breaks = NULL
+                  ) +
+                  scale_y_continuous(
+                    "Song Duration in Seconds",
+                    breaks = c(120000, 2400000, 360000, 480000, 600000),
+                    labels = c(120, 240, 360, 480, 600)
+                  ) +
+                  theme_minimal() + 
+                  theme(
+                      legend.position = c(1, 1)
+                    , legend.justification = c(1, 1),
+                    legend.direction = "horizontal",
+                     plot.title = element_text(family = "Georgia", color = 'black', hjust = 0.5
+                                                , size = 15
+                                                )
+                  ) +
+                  ggtitle("Average Song Lengths by Genre")
+              </code>
+          </pre>
+          <span style = "margin-top: 20px;"class="image fit"><img src="images/plot1.png" alt="" />
+            <br/>
+          <p>
+            Plot 2: I chose to visualize the relative count of the genres in the
+            dataset using a treemap instead of a more conventional option such
+            as a piechart because not only are piecharts generally not the best
+            option of communicating data, but the area - count mapping of the
+            treemap was very intuitive and clear.
+          </p>
+          <button onclick="toggle2(this)">Show Code</button>
+          <pre id = 'plot2' hidden = "true">
+              <code>
+                {r}
+                genre_counts <- genres %>%
+                  group_by(genre) %>% 
+                  summarize(
+                     count = n()
+                    )
+                
+                ggplot(genre_counts, aes(area = count, fill = genre, label = genre)) +
+                  geom_treemap(alpha = .8) +
+                   geom_treemap_text(
+                     place = 'center',
+                     size = '12',
+                     family = 'Courier'
+                   )+
+                  geom_treemap_text(
+                    aes(label = count),
+                    color = 'white',
+                    size = '8'  ) +
+                  theme_minimal() +
+                  ggtitle('Distribution of Song Genres on Spotify')+
+                  theme(plot.title = element_text(family = "Georgia", color = 'black', hjust = 0.5, size = 15))
+              </code>
+          </pre>
+          <span style = "margin-top: 20px;" class="image fit"><img src="images/plot2.png" alt="" />
+            <br/>
+            <p>
+            I chose the Courier font to match the Spotify Receipt-style theme.
+          </p>
+          <p>
+            Plot3 : This series of graphs all have tempo on the x-axis,
+            revealing correlations between tempo and loudness, danceability,
+            speechiness, and energy
+          </p>
+          <button onclick="toggle3(this)">Show Code</button>
+          <pre id = 'plot3', hidden = "true">
+              <code>
+                {r}
+                #| fig-height: 5
+                #| fig-width: 7
+                tempoEnergy <- ggplot(genres, aes(tempo, energy,)) +
+                  geom_hex()
+                
+                tempoDance <- ggplot(genres, aes(tempo, danceability,)) +
+                  geom_hex()
+                
+                tempoLoud <- ggplot(genres, aes(tempo, loudness,)) +
+                  geom_hex()
+                
+                tempoSpeech <- ggplot(genres, aes(tempo, speechiness,)) +
+                  geom_hex()
+                
+                title <- ggdraw() + 
+                  draw_label(
+                      "Tempo vs. Energy, Loudness, Danceability, and Speechiness"
+                    , fontface = 'bold'
+                    , fontfamily = "Georgia"
+                    , x = .5
+                    , hjust = .5
+                    , size = 14
+                  ) +
+                  theme(
+                    plot.margin = margin(5, 5, 5, 5)
+                  )
+                
+                plot_grid(title,plot_grid(tempoEnergy, tempoDance, tempoLoud, tempoSpeech, nrow = 2) ,  ncol = 1 , rel_heights = c(.1, 1.5))
+              </code>
+          </pre>
+          <span style = "margin-top: 20px;"  class="image fit"><img src="images/plot3.png" alt="" />
+        </div>
+        <ul class="actions">
+          <li>
+            <a href="index.html#Projects" class="button">Back to Projects</a>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer" class="wrapper alt">
+      <div class="inner">
+        <ul class="menu">
+          <li>&copy; Untitled. All rights reserved.</li>
+          <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/jquery.scrolly.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <script>
+        let toggle1 = button => {
+          let element = document.getElementById("plot1");
+          let hidden = element.getAttribute("hidden");
+      
+          if (hidden) {
+             element.removeAttribute("hidden");
+             button.innerText = "Hide Code";
+          } else {
+             element.setAttribute("hidden", "hidden");
+             button.innerText = "Show Code";
+          }
+        }
+
+        let toggle2 = button => {
+          let element = document.getElementById("plot2");
+          let hidden = element.getAttribute("hidden");
+      
+          if (hidden) {
+             element.removeAttribute("hidden");
+             button.innerText = "Hide Code";
+          } else {
+             element.setAttribute("hidden", "hidden");
+             button.innerText = "Show Code";
+          }
+        }
+
+        let toggle3 = button => {
+          let element = document.getElementById("plot3");
+          let hidden = element.getAttribute("hidden");
+      
+          if (hidden) {
+             element.removeAttribute("hidden");
+             button.innerText = "Hide Code";
+          } else {
+             element.setAttribute("hidden", "hidden");
+             button.innerText = "Show Code";
+          }
+        }
+      </script>
+  </body>
+  <!-- add back to home button using same learn more button-->
+</html>
