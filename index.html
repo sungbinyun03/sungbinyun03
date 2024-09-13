@@ -33,6 +33,21 @@
 			.icons p {
 			  margin-top: 10px;
 			}
+			@media screen and (max-width: 600px) {
+				.icons {
+    display: flex;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping */
+    padding: 10px 0;
+    justify-content: flex-start; /* Align icons to the left for scrolling */
+  }
+
+  .icons li {
+    flex: 0 0 auto; /* Ensure icons don't shrink or grow */
+    margin-right: 15px; /* Add space between icons */
+  }
+
+}
 		  </style>
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
